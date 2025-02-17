@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Multi Pong</title>
+    <style>
+        body {
+            text-align: center;
+            background: linear-gradient(135deg, #1a2a6c, #b21f1f, #fdbb2d);
+            color: white;
+            font-family: Arial, sans-serif;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+        }
+        canvas {
+            border: 2px solid white;
+            display: block;
+            margin: auto;
+            background: rgba(0, 0, 0, 0.5);
+        }
+        .menu, .settings {
+            margin-top: 20px;
+            padding: 20px;
+            border-radius: 10px;
+            background: rgba(0, 0, 0, 0.7);
+            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.5);
+        }
+        .menu button, .back-button {
+            display: block;
+            width: 220px;
+            margin: 15px auto;
+            padding: 12px;
+            font-size: 18px;
+            color: white;
+            background: #ff8c00;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+        .menu button:hover, .back-button:hover {
+            background: #e67600;
+        }
+        .scoreboard {
+            display: none;
+            position: absolute;
+            top: 20px;
+            font-size: 24px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="menu" id="menu">
+        <h1>Multi Pong</h1>
+        <button onclick="startGame('friend')">Play with Friend</button>
+        <button onclick="startGame('computer')">Play with Computer</button>
+        <button onclick="openSettings()">Settings</button>
+    </div>
+    
+    <div class="settings" id="settingsMenu" style="display: none;">
+        <h2>Settings</h2>
+        <label>
+            <input type="checkbox" id="soundToggle" checked> Enable Sound
+        </label>
+        <br>
+        <label>
+            Ball Speed: <input type="range" id="ballSpeed" min="1" max="10" value="3" onchange="updateBallSpeed()">
+        </label>
+        <br>
+        <button onclick="closeSettings()">Back</button>
+    </div>
+
+    <div class="scoreboard" id="scoreboard">Player 1: 0 | Player 2: 0</div>
+    <canvas id="pongCanvas" width="800" height="400" style="display: none;"></canvas>
+    <button class="back-button" id="backButton" style="display: none;" onclick="goBack()">Back to Menu</button>
+    
+    <script>
+        let gameMode = 'friend';
+        let score1 = 0, score2 = 0;
+        const canvas = document.getElementById("pongCanvas");
+        const ctx = canvas.getContext("2d");
+
+        const paddleWidth = 10, paddleHeight = 80;
+        let paddle1Y = (canvas.height - paddleHeight) / 2;
+        let paddle2Y = (canvas.height - paddleHeight) / 2;
+        const paddleSpeed = 5;
+
+        let ballX = canvas.width / 2, ballY = canvas.height / 2;
+        let ballSpeedX = 3, ballSpeedY = 3;
+        const ballSize = 10;
+
+        function updateBallSpeed() {
+            let speed = document.getElementById('ballSpeed').value;
+            ballSpeedX = parseInt(speed);
+            ballSpeedY = parseInt(speed);
+        }
+
+        let keys = {};
+        document.addEventListener("keydown", (e) => keys[e.key] = true);
+        document.addEventListener("keyup", (e) => keys[e.key] = false);
+
+        function startGame(mode) {
+            gameMode = mode;
+            score1 = 0;
+            score2 = 0;
+            document.getElementById('menu').style.display = 'none';
+            document.getElementById('settingsMenu').style.display = 'none';
+            document.getElementById('pongCanvas').style.display = 'block';
+            document.getElementById('scoreboard').style.display = 'block';
+            document.getElementById('backButton').style.display = 'block';
+            resetBall();
+            gameLoop();
+        }
+        
+        function resetBall() {
+            ballX = canvas.width / 2;
+            ballY = canvas.height / 2;
+            ballSpeedX = 3;
+            ballSpeedY = 3;
+        }
+
+        function update() {
+            if (keys['w'] && paddle1Y > 0) paddle1Y -= paddleSpeed;
+            if (keys['s'] && paddle1Y < canvas.height - paddleHeight) paddle1Y += paddleSpeed;
+            if (keys['ArrowUp'] && paddle2Y > 0) paddle2Y -= paddleSpeed;
+            if (keys['ArrowDown'] && paddle2Y < canvas.height - paddleHeight) paddle2Y += paddleSpeed;
+
+            ballX += ballSpeedX;
+            ballY += ballSpeedY;
+
+            if (ballY <= 0 || ballY >= canvas.height - ballSize) ballSpeedY = -ballSpeedY;
+
+            if ((ballX <= paddleWidth && ballY >= paddle1Y && ballY <= paddle1Y + paddleHeight) ||
+                (ballX >= canvas.width - paddleWidth - ballSize && ballY >= paddle2Y && ballY <= paddle2Y + paddleHeight)) {
+                ballSpeedX = -ballSpeedX;
+            }
+
+            if (ballX < 0) {
+                score2++;
+                resetBall();
+            } else if (ballX > canvas.width) {
+                score1++;
+                resetBall();
+            }
+            
+            document.getElementById('scoreboard').textContent = `Player 1: ${score1} | Player 2: ${score2}`;
+        }
+
+        function draw() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = "white";
+            ctx.fillRect(0, paddle1Y, paddleWidth, paddleHeight);
+            ctx.fillRect(canvas.width - paddleWidth, paddle2Y, paddleWidth, paddleHeight);
+            ctx.fillRect(ballX, ballY, ballSize, ballSize);
+        }
+
+        function gameLoop() {
+            update();
+            draw();
+            requestAnimationFrame(gameLoop);
+        }
+
+        function goBack() {
+            location.reload();
+        }
+    </script>
+</body>
+</html>
