@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+ <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -127,8 +127,19 @@
         function update() {
             if (keys['w'] && paddle1Y > 0) paddle1Y -= paddleSpeed;
             if (keys['s'] && paddle1Y < canvas.height - paddleHeight) paddle1Y += paddleSpeed;
-            if (keys['ArrowUp'] && paddle2Y > 0) paddle2Y -= paddleSpeed;
-            if (keys['ArrowDown'] && paddle2Y < canvas.height - paddleHeight) paddle2Y += paddleSpeed;
+
+            if (gameMode === 'computer') {
+                let paddleCenter = paddle2Y + paddleHeight / 2;
+
+                if (paddleCenter < ballY - 10) {
+                    paddle2Y += Math.min(paddleSpeed, canvas.height - paddleHeight - paddle2Y);
+                } else if (paddleCenter > ballY + 10) {
+                    paddle2Y -= Math.min(paddleSpeed, paddle2Y);
+                }
+            } else {
+                if (keys['ArrowUp'] && paddle2Y > 0) paddle2Y -= paddleSpeed;
+                if (keys['ArrowDown'] && paddle2Y < canvas.height - paddleHeight) paddle2Y += paddleSpeed;
+            }
 
             ballX += ballSpeedX;
             ballY += ballSpeedY;
@@ -167,6 +178,16 @@
 
         function goBack() {
             location.reload();
+        }
+
+        function openSettings() {
+            document.getElementById('menu').style.display = 'none';
+            document.getElementById('settingsMenu').style.display = 'block';
+        }
+
+        function closeSettings() {
+            document.getElementById('settingsMenu').style.display = 'none';
+            document.getElementById('menu').style.display = 'block';
         }
     </script>
 </body>
