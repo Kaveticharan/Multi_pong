@@ -2,7 +2,7 @@
   "routes": [
     {
       "src": "/",
-      "dest": "/mong_pong.html"
+      "dest": "/multi_pong.html"
     }
   ]
 }
